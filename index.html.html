@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum Bogor Kota Gastronomi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700;8..60,800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/docx@8.2.3/build/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+/* ==========================================
+   NOTION-INSPIRED DASHBOARD
+   Forum Bogor Kota Gastronomi
+   ========================================== */
+:root {
+    --bg-page: #FFFFFF;
+    --bg-sidebar: #F7F7F5;
+    --bg-hover: #F1F1EF;
+    --bg-active: #EBEBEA;
+    --bg-input: #FFFFFF;
+    --bg-overlay: rgba(15,15,15,0.6);
+    --bg-tag: #F1F1EF;
+
+    --border: #E9E9E7;
+    --border-strong: #DBDBDB;
+
+    --text-primary: #37352F;
+    --text-secondary: #6B6B6B;
+    --text-tertiary: #9B9A97;
+    --text-link: #067D9B;
+
+    /* Status Colors — Notion palette */
+    --status-backlog-bg: #F1F1EF; --status-backlog-fg: #787774;
+    --status-todo-bg: #D3E5EF; --status-todo-fg: #2573A7;
+    --status-progress-bg: #FADEC9; --status-progress-fg: #C77D2E;
+    --status-review-bg: #E8DEEE; --status-review-fg: #7C4EA0;
+    --status-done-bg: #DBEDDB; --status-done-fg: #2D7A3A;
+
+    /* Priority Colors */
+    --urgent-bg: #FFE2DD; --urgent-fg: #CE3C3C;
+    --normal-bg: #FADEC9; --normal-fg: #C77D2E;
+    --low-bg: #DBEDDB; --low-fg: #448361;
+
+    --font-body: 'DM Sans', -apple-system, sans-serif;
+    --font-display: 'Source Serif 4', Georgia, serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+
+    --sidebar-w: 240px;
+    --radius: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html { font-size: 15px; }
+
+body {
+    font-family: var(--font-body);
+    color: var(--text-primary);
+    background: var(--bg-page);
+    display: flex;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+}
+
+/* ========== SIDEBAR ========== */
+.sidebar {
+    width: var(--sidebar-w);
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    overflow-y: auto;
+    transition: transform 0.2s var(--ease);
+}
+
+.sidebar-brand {
+    padding: 16px 14px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+    cursor: default;
+}
+
+.brand-icon {
+    width: 28px; height: 28px;
+    background: var(--text-primary);
+    color: #FFF;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.brand-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.25;
+}
+
+.brand-text small {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-tertiary);
+    letter-spacing: 0.02em;
+}
+
+.sidebar-nav {
+    padding: 8px 8px;
+    flex: 1;
+}
+
+.nav-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 16px 8px 4px;
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 10px;
+    border: none;
+    background: none;
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+    text-align: left;
+    position: relative;
+}
+
+.nav-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+.nav-btn.active {
+    background: var(--bg-active);
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.nav-btn svg { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.65; }
+.nav-btn.active svg { opacity: 1; }
+
+.nav-badge {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    background: var(--bg-page);
+    padding: 0 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    line-height: 18px;
+}
+
+.sidebar-footer {
+    padding: 12px 14px;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    text-align: center;
+}
+
+/* ========== MAIN ========== */
+.main {
+    flex: 1;
+    margin-left: var(--sidebar-w);
+    min-height: 100vh;
+}
+
+.page { display: none; padding: 0; animation: pageFadeIn 0.25s var(--ease); }
+.page.active { display: block; }
+
+@keyframes pageFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.page-inner {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 40px 60px 80px;
+}
+
+.page-title {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 4px;
+}
+
+.page-desc {
+    font-size: 14px;
+    color: var(--text-tertiary);
+    margin-bottom: 32px;
+}
+
+/* ========== BUTTONS ========== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    transition: background 0.12s;
+    white-space: nowrap;
+}
+
+.btn:hover { background: var(--bg-hover); }
+
+.btn svg { width: 14px; height: 14px; }
+
+.btn-primary {
+    background: var(--text-primary);
+    color: #FFF;
+    border-color: var(--text-primary);
+}
+
+.btn-primary:hover { background: #4B4B4B; }
+
+.btn-danger { color: var(--urgent-fg); border-color: var(--urgent-bg); background: var(--urgent-bg); }
+.btn-danger:hover { background: #FDD; }
+
+.btn-ghost { border: none; background: none; }
+.btn-ghost:hover { background: var(--bg-hover); }
+
+.btn-sm { padding: 3px 8px; font-size: 12px; }
+
+.btn-icon {
+    border: none; background: none; cursor: pointer;
+    color: var(--text-tertiary); padding: 4px;
+    border-radius: var(--radius); display: flex;
+    align-items: center; justify-content: center;
+    transition: color 0.12s, background 0.12s;
+}
+
+.btn-icon:hover { color: var(--text-primary); background: var(--bg-hover); }
+.btn-icon svg { width: 16px; height: 16px; }
+
+/* ========== BADGES ========== */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: var(--radius);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+}
+
+.badge-backlog { background: var(--status-backlog-bg); color: var(--status-backlog-fg); }
+.badge-todo { background: var(--status-todo-bg); color: var(--status-todo-fg); }
+.badge-inprogress { background: var(--status-progress-bg); color: var(--status-progress-fg); }
+.badge-review { background: var(--status-review-bg); color: var(--status-review-fg); }
+.badge-done { background: var(--status-done-bg); color: var(--status-done-fg); }
+.badge-urgent { background: var(--urgent-bg); color: var(--urgent-fg); }
+.badge-normal { background: var(--normal-bg); color: var(--normal-fg); }
+.badge-low { background: var(--low-bg); color: var(--low-fg); }
+
+/* ========== STAT ROW ========== */
+.stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 36px;
+}
+
+.stat-item {
+    background: var(--bg-page);
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.stat-number {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.stat-label {
+    font-size: 12.5px;
+    color: var(--text-tertiary);
+    font-weight: 400;
+}
+
+.stat-item.overdue-stat .stat-number { color: var(--urgent-fg); }
+
+/* ========== SECTIONS ========== */
+.section {
+    margin-bottom: 40px;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* ========== DASHBOARD GRID ========== */
+.dash-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 32px;
+}
+
+/* ========== CALENDAR ========== */
+.cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.cal-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.cal-nav { display: flex; gap: 2px; align-items: center; }
+
+.cal-nav-label {
+    font-size: 14px;
+    font-weight: 600;
+    min-width: 140px;
+    text-align: center;
+}
+
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.cal-weekday {
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: var(--bg-sidebar);
+    border-bottom: 1px solid var(--border);
+}
+
+.cal-day {
+    min-height: 52px;
+    padding: 4px 6px;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.1s;
+    position: relative;
+    background: var(--bg-page);
+}
+
+.cal-day:nth-child(7n) { border-right: none; }
+
+.cal-day:hover { background: var(--bg-hover); }
+
+.cal-day-num {
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 3px;
+}
+
+.cal-day.today .cal-day-num {
+    background: var(--text-primary);
+    color: #FFF;
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.cal-day.other .cal-day-num { color: var(--text-tertiary); opacity: 0.5; }
+
+.cal-dots { display: flex; gap: 3px; flex-wrap: wrap; }
+
+.cal-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Calendar popup */
+.cal-popup {
+    position: fixed;
+    background: var(--bg-page);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    padding: 12px;
+    z-index: 500;
+    min-width: 240px;
+    max-width: 320px;
+    animation: popIn 0.15s var(--ease);
+}
+
+@keyframes popIn {
+    from { opacity:0; transform: scale(0.97); }
+    to { opacity:1; transform: scale(1); }
+}
+
+.cal-popup-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cal-popup-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: color 0.1s;
+}
+
+.cal-popup-item:hover { color: var(--text-link); }
+
+/* ========== SIDE LISTS ========== */
+.side-section { margin-bottom: 28px; }
+
+.side-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+}
+
+.side-list-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    font-size: 13px;
+    cursor: pointer;
+    transition: color 0.1s;
+    border-bottom: 1px solid var(--bg-hover);
+}
+
+.side-list-item:last-child { border-bottom: none; }
+.side-list-item:hover { color: var(--text-link); }
+
+.side-list-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    min-width: 56px;
+    flex-shrink: 0;
+}
+
+.side-list-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.side-list-item.overdue .side-list-date { color: var(--urgent-fg); font-weight: 500; }
+
+/* ========== FILTER BAR ========== */
+.filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.search-input {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0 10px;
+    flex: 1;
+    min-width: 180px;
+    background: var(--bg-page);
+    transition: border-color 0.15s;
+}
+
+.search-input:focus-within { border-color: var(--text-link); }
+
+.search-input svg { width: 14px; height: 14px; color: var(--text-tertiary); flex-shrink: 0; }
+
+.search-input input {
+    border: none; background: none; outline: none;
+    font-family: var(--font-body); font-size: 13px;
+    padding: 6px 0; width: 100%;
+    color: var(--text-primary);
+}
+
+.search-input input::placeholder { color: var(--text-tertiary); }
+
+.filter-select {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: 13px;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.filter-select:focus { border-color: var(--text-link); }
+
+/* ========== TABLE ========== */
+.tbl-wrap { overflow-x: auto; }
+
+.tbl {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.tbl thead th {
+    text-align: left;
+    padding: 8px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+    background: var(--bg-sidebar);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+.tbl tbody tr {
+    transition: background 0.08s;
+}
+
+.tbl tbody tr:hover { background: var(--bg-hover); }
+
+.tbl tbody td {
+    padding: 10px 14px;
+    font-size: 13.5px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.tbl tbody tr:last-child td { border-bottom: none; }
+
+.tbl-name {
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.1s;
+}
+
+.tbl-name:hover { color: var(--text-link); }
+
+.tbl-date {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.tbl-date.overdue { color: var(--urgent-fg); font-weight: 500; }
+
+.tbl-actions { display: flex; gap: 2px; }
+
+/* ========== NOTULENSI CARDS ========== */
+.not-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+}
+
+.not-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: background 0.1s, box-shadow 0.15s;
+    background: var(--bg-page);
+}
+
+.not-card:hover {
+    background: var(--bg-hover);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.not-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.not-card h4 {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.35;
+    flex: 1;
+}
+
+.not-card-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-left: 10px;
+    white-space: nowrap;
+    padding-top: 2px;
+}
+
+.not-card-meta {
+    display: flex;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+.not-card-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.not-card-meta svg { width: 13px; height: 13px; }
+
+.not-card-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+/* ========== FORMS ========== */
+.form-group { margin-bottom: 16px; }
+
+.form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.form-label .req { color: var(--urgent-fg); }
+
+.form-input {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--text-primary);
+    background: var(--bg-input);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-input:focus {
+    border-color: var(--text-link);
+    box-shadow: 0 0 0 2px rgba(6,125,155,0.08);
+}
+
+.form-input::placeholder { color: var(--text-tertiary); }
+
+.form-textarea { resize: vertical; min-height: 72px; line-height: 1.55; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Multi-input: tags + add row */
+.mi-wrap {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    background: var(--bg-sidebar);
+}
+
+.mi-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
+.mi-tags:empty { margin-bottom: 0; }
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background: var(--bg-page);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 12.5px;
+    font-weight: 500;
+}
+
+.tag-x {
+    cursor: pointer;
+    color: var(--text-tertiary);
+    font-size: 14px;
+    line-height: 1;
+    transition: color 0.1s;
+}
+
+.tag-x:hover { color: var(--urgent-fg); }
+
+.mi-row { display: flex; gap: 6px; }
+.mi-row .form-input { flex: 1; font-size: 13px; padding: 5px 8px; }
+
+/* Langkah list */
+.lk-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.lk-list:empty { margin-bottom: 0; }
+
+.lk-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: var(--bg-page);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13.5px;
+}
+
+.lk-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    min-width: 20px;
+}
+
+.lk-text { flex: 1; }
+
+.lk-rm {
+    cursor: pointer;
+    color: var(--text-tertiary);
+    transition: color 0.1s;
+    font-size: 15px;
+}
+
+.lk-rm:hover { color: var(--urgent-fg); }
+
+/* ========== MODALS ========== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-overlay);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    z-index: 1000;
+    padding: 60px 20px 20px;
+    animation: overlayIn 0.12s;
+    overflow-y: auto;
+}
+
+@keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+    background: var(--bg-page);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 16px 70px rgba(0,0,0,0.16);
+    animation: modalIn 0.15s var(--ease);
+    max-height: calc(100vh - 100px);
+}
+
+.modal-lg { max-width: 640px; }
+.modal-sm { max-width: 380px; }
+
+@keyframes modalIn {
+    from { transform: translateY(8px) scale(0.98); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.modal-head {
+    padding: 18px 22px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.modal-head h3 {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.modal-body {
+    padding: 20px 22px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-foot {
+    padding: 14px 22px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+/* ========== DETAIL VIEW ========== */
+.det-section { margin-bottom: 18px; }
+.det-section:last-child { margin-bottom: 0; }
+
+.det-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+}
+
+.det-value {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.det-value h2 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.det-inline { display: flex; gap: 24px; }
+
+.det-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+
+.det-ol {
+    list-style: none;
+    counter-reset: step;
+}
+
+.det-ol li {
+    counter-increment: step;
+    padding: 6px 0 6px 28px;
+    position: relative;
+    border-bottom: 1px solid var(--bg-hover);
+    font-size: 14px;
+}
+
+.det-ol li:last-child { border-bottom: none; }
+
+.det-ol li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0; top: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    background: var(--bg-sidebar);
+    width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+}
+
+/* ========== SETTINGS ========== */
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.settings-grid > .section:first-child { grid-column: 1 / -1; }
+
+.dept-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.dept-row .form-input { flex: 1; }
+
+.dept-list { display: flex; flex-direction: column; gap: 4px; }
+
+.dept-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--bg-sidebar);
+    border-radius: var(--radius);
+    font-size: 13.5px;
+}
+
+.backup-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ========== SYNC ========== */
+.sync-item {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    transition: background 0.1s, border-color 0.15s;
+}
+
+.sync-item.checked {
+    background: #F0F7FF;
+    border-color: var(--text-link);
+}
+
+.sync-item input[type="checkbox"] {
+    margin-top: 2px;
+    accent-color: var(--text-link);
+    width: 15px; height: 15px;
+    cursor: pointer;
+}
+
+.sync-content { flex: 1; }
+
+.sync-text { font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+
+.sync-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.sync-fields .form-input { padding: 5px 8px; font-size: 12px; }
+
+/* ========== EMPTY STATES ========== */
+.empty {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text-tertiary);
+}
+
+.empty-icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+    opacity: 0.3;
+}
+
+.empty h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.empty p { font-size: 13px; }
+
+.empty-sm {
+    text-align: center;
+    padding: 16px 10px;
+    font-size: 12.5px;
+    color: var(--text-tertiary);
+}
+
+/* ========== TOAST ========== */
+#toast-box {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.toast {
+    background: var(--text-primary);
+    color: #FFF;
+    padding: 8px 18px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+    animation: toastIn 0.25s var(--ease);
+    white-space: nowrap;
+}
+
+.toast.ok { background: var(--status-done-fg); }
+.toast.err { background: var(--urgent-fg); }
+.toast.info { background: var(--text-link); }
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toastOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(12px); }
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+    .dash-grid { grid-template-columns: 1fr; }
+    .page-inner { padding: 28px 32px 60px; }
+}
+
+@media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .page-inner { padding: 20px 16px 60px; }
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .settings-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .not-grid { grid-template-columns: 1fr; }
+    .page-title { font-size: 1.7rem; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
+/* Mobile menu button */
+.mobile-menu-btn {
+    display: none;
+    position: fixed;
+    top: 12px; left: 12px;
+    z-index: 150;
+    background: var(--bg-page);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 6px 8px;
+    cursor: pointer;
+}
+
+.mobile-menu-btn svg { width: 20px; height: 20px; }
+
+@media (max-width: 768px) {
+    .mobile-menu-btn { display: flex; }
+}
+</style>
+</head>
+<body>
+
+<div id="toast-box"></div>
+
+<!-- Mobile menu toggle -->
+<button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon">B</div>
+        <div class="brand-text">
+            Forum Bogor
+            <small>Kota Gastronomi</small>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Menu</div>
+        <button class="nav-btn active" data-tab="dashboard" onclick="go('dashboard')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Dashboard
+            <span class="nav-badge" id="b-overdue" style="display:none">0</span>
+        </button>
+        <button class="nav-btn" data-tab="tasks" onclick="go('tasks')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            Tasks
+            <span class="nav-badge" id="b-tasks" style="display:none">0</span>
+        </button>
+        <button class="nav-btn" data-tab="notulensi" onclick="go('notulensi')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Notulensi
+            <span class="nav-badge" id="b-not" style="display:none">0</span>
+        </button>
+
+        <div class="nav-section-label" style="margin-top:8px">Pengaturan</div>
+        <button class="nav-btn" data-tab="settings" onclick="go('settings')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            Sync & Settings
+        </button>
+    </nav>
+    <div class="sidebar-footer" id="clock"></div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="page active" id="pg-dashboard">
+        <div class="page-inner">
+            <h1 class="page-title">Dashboard</h1>
+            <p class="page-desc">Pantau seluruh aktivitas Forum Bogor Kota Gastronomi</p>
+
+            <div class="stat-row">
+                <div class="stat-item"><span class="stat-number" id="s-total">0</span><span class="stat-label">Total Tasks</span></div>
+                <div class="stat-item"><span class="stat-number" id="s-prog">0</span><span class="stat-label">In Progress</span></div>
+                <div class="stat-item"><span class="stat-number" id="s-done">0</span><span class="stat-label">Completed</span></div>
+                <div class="stat-item overdue-stat"><span class="stat-number" id="s-over">0</span><span class="stat-label">Overdue</span></div>
+            </div>
+
+            <div class="dash-grid">
+                <div>
+                    <div class="cal-header">
+                        <h3>Kalender</h3>
+                        <div class="cal-nav">
+                            <button class="btn-icon" onclick="chMonth(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+                            <span class="cal-nav-label" id="cal-label"></span>
+                            <button class="btn-icon" onclick="chMonth(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+                        </div>
+                    </div>
+                    <div class="cal-grid" id="cal-grid">
+                        <div class="cal-weekday">Sen</div><div class="cal-weekday">Sel</div><div class="cal-weekday">Rab</div>
+                        <div class="cal-weekday">Kam</div><div class="cal-weekday">Jum</div><div class="cal-weekday">Sab</div><div class="cal-weekday">Min</div>
+                    </div>
+                </div>
+                <div>
+                    <div class="side-section">
+                        <div class="side-section-title">Deadline Terdekat</div>
+                        <div id="upcoming"></div>
+                    </div>
+                    <div class="side-section">
+                        <div class="side-section-title">Notulensi Terbaru</div>
+                        <div id="recent-not"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TASKS ===== -->
+    <div class="page" id="pg-tasks">
+        <div class="page-inner">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+                <h1 class="page-title">Tasks</h1>
+                <button class="btn btn-primary" onclick="openTaskForm()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Task Baru
+                </button>
+            </div>
+            <p class="page-desc">Kelola seluruh tugas dan kegiatan forum</p>
+
+            <div class="filter-bar">
+                <div class="search-input">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="f-search" placeholder="Cari task..." oninput="renderTasks()">
+                </div>
+                <select class="filter-select" id="f-status" onchange="renderTasks()">
+                    <option value="">Semua Status</option>
+                    <option value="Backlog">Backlog</option><option value="To Do">To Do</option>
+                    <option value="In Progress">In Progress</option><option value="Review">Review</option>
+                    <option value="Done">Done</option>
+                </select>
+                <select class="filter-select" id="f-prio" onchange="renderTasks()">
+                    <option value="">Semua Priority</option>
+                    <option value="Urgent">Urgent</option><option value="Normal">Normal</option><option value="Low">Low</option>
+                </select>
+                <select class="filter-select" id="f-dept" onchange="renderTasks()"></select>
+            </div>
+
+            <div class="tbl-wrap" id="task-tbl-wrap">
+                <table class="tbl">
+                    <thead>
+                        <tr><th>Nama Project</th><th>Deadline</th><th>Status</th><th>Priority</th><th>PIC</th><th>Departemen</th><th style="width:70px">Aksi</th></tr>
+                    </thead>
+                    <tbody id="task-tb"></tbody>
+                </table>
+            </div>
+            <div class="empty" id="task-empty" style="display:none">
+                <div class="empty-icon">📋</div>
+                <h3>Belum Ada Task</h3>
+                <p>Klik "Task Baru" untuk mulai menambahkan tugas</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== NOTULENSI ===== -->
+    <div class="page" id="pg-notulensi">
+        <div class="page-inner">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+                <h1 class="page-title">Notulensi</h1>
+                <button class="btn btn-primary" onclick="openNotForm()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Notulensi Baru
+                </button>
+            </div>
+            <p class="page-desc">Dokumentasi hasil rapat forum</p>
+
+            <div class="not-grid" id="not-list"></div>
+            <div class="empty" id="not-empty" style="display:none">
+                <div class="empty-icon">📝</div>
+                <h3>Belum Ada Notulensi</h3>
+                <p>Klik "Notulensi Baru" untuk mulai mendokumentasikan rapat</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SETTINGS ===== -->
+    <div class="page" id="pg-settings">
+        <div class="page-inner">
+            <h1 class="page-title">Sync & Settings</h1>
+            <p class="page-desc">Sinkronisasi notulensi ke task dan kelola pengaturan</p>
+
+            <div class="settings-grid">
+                <div class="section">
+                    <div class="section-header"><span class="section-title">Sinkronisasi Notulensi → Task</span></div>
+                    <div class="form-group">
+                        <label class="form-label">Pilih Notulensi</label>
+                        <select id="sync-sel" class="form-input" onchange="loadSync()"><option value="">— Pilih Notulensi —</option></select>
+                    </div>
+                    <div id="sync-box"></div>
+                    <button class="btn btn-primary" id="sync-btn" onclick="doSync()" style="display:none;margin-top:10px">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                        Sync Ke Tasks
+                    </button>
+                </div>
+
+                <div class="section">
+                    <div class="section-header"><span class="section-title">Kelola Departemen</span></div>
+                    <div class="dept-row">
+                        <input type="text" id="dept-in" class="form-input" placeholder="Nama departemen baru...">
+                        <button class="btn" onclick="addDept()">Tambah</button>
+                    </div>
+                    <div class="dept-list" id="dept-list"></div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header"><span class="section-title">Backup & Restore</span></div>
+                    <div class="backup-btns">
+                        <button class="btn" onclick="exportAll()">↓ Export JSON</button>
+                        <label class="btn" for="imp-file">↑ Import JSON</label>
+                        <input type="file" id="imp-file" accept=".json" onchange="importAll(event)" style="display:none">
+                        <button class="btn btn-danger" onclick="confirmReset()">Reset Semua Data</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ===== MODALS ===== -->
+
+<!-- Task Modal -->
+<div class="modal-overlay" id="m-task" style="display:none">
+    <div class="modal">
+        <div class="modal-head">
+            <h3 id="m-task-title">Tambah Task Baru</h3>
+            <button class="btn-icon" onclick="closeM('m-task')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="t-id">
+            <div class="form-group">
+                <label class="form-label">Nama Project <span class="req">*</span></label>
+                <input type="text" id="t-name" class="form-input" placeholder="Masukkan nama project...">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Deadline <span class="req">*</span></label>
+                    <input type="date" id="t-dead" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="t-status" class="form-input">
+                        <option value="Backlog">Backlog</option><option value="To Do">To Do</option>
+                        <option value="In Progress">In Progress</option><option value="Review">Review</option>
+                        <option value="Done">Done</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Priority</label>
+                    <select id="t-prio" class="form-input">
+                        <option value="Normal">Normal</option><option value="Urgent">Urgent</option><option value="Low">Low</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Departemen</label>
+                    <select id="t-dept" class="form-input"><option value="">— Pilih —</option></select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">PIC (Penanggung Jawab)</label>
+                <input type="text" id="t-pic" class="form-input" placeholder="Nama penanggung jawab...">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Deskripsi</label>
+                <textarea id="t-desc" class="form-input form-textarea" rows="3" placeholder="Deskripsi tugas..."></textarea>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn" onclick="closeM('m-task')">Batal</button>
+            <button class="btn btn-primary" onclick="saveTask()">Simpan</button>
+        </div>
+    </div>
+</div>
+
+<!-- Notulensi Modal -->
+<div class="modal-overlay" id="m-not" style="display:none">
+    <div class="modal modal-lg">
+        <div class="modal-head">
+            <h3 id="m-not-title">Buat Notulensi Baru</h3>
+            <button class="btn-icon" onclick="closeM('m-not')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="n-id">
+            <div class="form-row">
+                <div class="form-group" style="flex:2">
+                    <label class="form-label">Judul Meeting <span class="req">*</span></label>
+                    <input type="text" id="n-judul" class="form-input" placeholder="Judul rapat...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tanggal <span class="req">*</span></label>
+                    <input type="date" id="n-tgl" class="form-input">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Peserta Meeting</label>
+                <div class="mi-wrap">
+                    <div class="mi-tags" id="p-tags"></div>
+                    <div class="mi-row">
+                        <input type="text" id="p-in" class="form-input" placeholder="Nama peserta... (Enter)" onkeydown="if(event.key==='Enter'){event.preventDefault();addP()}">
+                        <button class="btn btn-sm" onclick="addP()">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Topik Bahasan</label>
+                <textarea id="n-topik" class="form-input form-textarea" rows="3" placeholder="Topik yang dibahas..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Langkah yang Ditempuh</label>
+                <div class="lk-list" id="lk-list"></div>
+                <div class="mi-row">
+                    <input type="text" id="lk-in" class="form-input" placeholder="Langkah aksi... (Enter)" onkeydown="if(event.key==='Enter'){event.preventDefault();addLk()}">
+                    <button class="btn btn-sm" onclick="addLk()">+</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Kesimpulan / Summary</label>
+                <textarea id="n-kesp" class="form-input form-textarea" rows="3" placeholder="Kesimpulan hasil rapat..."></textarea>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button class="btn" onclick="closeM('m-not')">Batal</button>
+            <button class="btn btn-primary" onclick="saveNot()">Simpan</button>
+        </div>
+    </div>
+</div>
+
+<!-- Notulensi Detail Modal -->
+<div class="modal-overlay" id="m-not-det" style="display:none">
+    <div class="modal modal-lg">
+        <div class="modal-head">
+            <h3>Detail Notulensi</h3>
+            <button class="btn-icon" onclick="closeM('m-not-det')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+        <div class="modal-body" id="not-det-body"></div>
+        <div class="modal-foot">
+            <button class="btn" onclick="closeM('m-not-det')">Tutup</button>
+            <button class="btn" id="btn-word">↓ Word</button>
+            <button class="btn" id="btn-pdf">↓ PDF</button>
+        </div>
+    </div>
+</div>
+
+<!-- Task Detail Modal -->
+<div class="modal-overlay" id="m-task-det" style="display:none">
+    <div class="modal">
+        <div class="modal-head">
+            <h3>Detail Task</h3>
+            <button class="btn-icon" onclick="closeM('m-task-det')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+        <div class="modal-body" id="task-det-body"></div>
+        <div class="modal-foot">
+            <button class="btn" onclick="closeM('m-task-det')">Tutup</button>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="m-confirm" style="display:none">
+    <div class="modal modal-sm">
+        <div class="modal-head">
+            <h3 id="cf-title">Konfirmasi</h3>
+            <button class="btn-icon" onclick="closeM('m-confirm')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+        <div class="modal-body"><p id="cf-msg"></p></div>
+        <div class="modal-foot">
+            <button class="btn" onclick="closeM('m-confirm')">Batal</button>
+            <button class="btn btn-danger" id="cf-btn">Hapus</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ==========================================
+   APP LOGIC
+   ========================================== */
+
+// Data layer
+const D={
+    g(k){try{return JSON.parse(localStorage.getItem('fbkg_'+k))||[]}catch{return[]}},
+    s(k,v){localStorage.setItem('fbkg_'+k,JSON.stringify(v))},
+    all(){return{tasks:this.g('tasks'),notulensi:this.g('notulensi'),departments:this.g('departments')}}
+};
+
+let cMonth=new Date().getMonth(), cYear=new Date().getFullYear();
+let tmpP=[], tmpLk=[];
+let calPopup=null;
+
+document.addEventListener('DOMContentLoaded',init);
+
+function init(){
+    renderDash(); renderTasks(); renderNots(); renderCal(); renderDepts();
+    updateBadges(); updDeptSel(); updSyncSel(); startClock(); initKeys();
+}
+
+// Clock
+function startClock(){
+    const el=$('clock');
+    function t(){
+        const d=new Date();
+        el.textContent=d.toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short',year:'numeric'})+' · '+d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+    }
+    t(); setInterval(t,30000);
+}
+
+// Keys
+function initKeys(){
+    document.addEventListener('keydown',e=>{
+        if(e.ctrlKey&&e.key==='n'){e.preventDefault();const t=document.querySelector('.nav-btn.active')?.dataset.tab;t==='notulensi'?openNotForm():openTaskForm();}
+        if(e.key==='Escape'){document.querySelectorAll('.modal-overlay').forEach(m=>{if(m.style.display!=='none')closeM(m.id)});removeCalPopup();}
+    });
+}
+
+// Helpers
+function $(id){return document.getElementById(id)}
+function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function genId(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5)}
+function fmtDate(s){if(!s)return'-';return new Date(s).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}
+function fmtShort(s){if(!s)return'-';return new Date(s).toLocaleDateString('id-ID',{day:'numeric',month:'short'})}
+function isOD(s){if(!s)return false;const d=new Date(s);d.setHours(23,59,59,999);return d<new Date()}
+
+// Badges
+function sBadge(s){const m={'Backlog':'badge-backlog','To Do':'badge-todo','In Progress':'badge-inprogress','Review':'badge-review','Done':'badge-done'};return`<span class="badge ${m[s]||''}">${s}</span>`}
+function pBadge(p){const m={'Urgent':'badge-urgent','Normal':'badge-normal','Low':'badge-low'};return`<span class="badge ${m[p]||''}">${p}</span>`}
+function dotColor(s){const m={'Backlog':'var(--status-backlog-fg)','To Do':'var(--status-todo-fg)','In Progress':'var(--status-progress-fg)','Review':'var(--status-review-fg)','Done':'var(--status-done-fg)'};return m[s]||'var(--status-backlog-fg)'}
+
+function updateBadges(){
+    const t=D.g('tasks'),n=D.g('notulensi');
+    const od=t.filter(x=>isOD(x.deadline)&&x.status!=='Done').length;
+    setB('b-tasks',t.length); setB('b-not',n.length); setB('b-overdue',od);
+}
+function setB(id,c){const e=$(id);if(c>0){e.textContent=c;e.style.display=''}else e.style.display='none'}
+
+// Tab Navigation
+function go(tab){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    $('pg-'+tab).classList.add('active');
+    document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+    if(tab==='dashboard')renderDash();
+    if(tab==='tasks')renderTasks();
+    if(tab==='notulensi')renderNots();
+    if(tab==='settings'){renderDepts();updSyncSel();}
+    // Close mobile sidebar
+    $('sidebar').classList.remove('open');
+    removeCalPopup();
+}
+
+// Toast
+function toast(msg,type='ok'){
+    const c=$('toast-box'),t=document.createElement('div');
+    t.className='toast '+type;t.textContent=msg;c.appendChild(t);
+    setTimeout(()=>{t.style.animation='toastOut 0.25s forwards';setTimeout(()=>t.remove(),250)},2200);
+}
+
+// Modal
+function openM(id){$(id).style.display='flex';document.body.style.overflow='hidden'}
+function closeM(id){$(id).style.display='none';document.body.style.overflow=''}
+document.addEventListener('click',e=>{if(e.target.classList.contains('modal-overlay'))closeM(e.target.id)});
+
+// ========== DEPARTMENTS ==========
+function renderDepts(){
+    const ds=D.g('departments'),el=$('dept-list');
+    if(!ds.length){el.innerHTML='<div class="empty-sm">Belum ada departemen</div>';return}
+    el.innerHTML=ds.map(d=>`<div class="dept-item"><span>${esc(d)}</span><button class="btn-icon" onclick="cfDelDept('${esc(d)}')" title="Hapus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div>`).join('');
+}
+
+function addDept(){
+    const inp=$('dept-in'),n=inp.value.trim();if(!n)return;
+    const ds=D.g('departments');if(ds.includes(n)){toast('Departemen sudah ada','err');return}
+    ds.push(n);D.s('departments',ds);inp.value='';renderDepts();updDeptSel();toast('Departemen ditambahkan');
+}
+
+function cfDelDept(name){
+    $('cf-title').textContent='Hapus Departemen';
+    $('cf-msg').textContent=`Yakin hapus departemen "${name}"?`;
+    const b=$('cf-btn');b.textContent='Hapus';b.className='btn btn-danger';
+    b.onclick=()=>{let ds=D.g('departments');ds=ds.filter(d=>d!==name);D.s('departments',ds);renderDepts();updDeptSel();closeM('m-confirm');toast('Departemen dihapus')};
+    openM('m-confirm');
+}
+
+function updDeptSel(){
+    const ds=D.g('departments');
+    ['t-dept','f-dept'].forEach(id=>{
+        const sel=$(id);if(!sel)return;const v=sel.value;
+        sel.innerHTML=id==='f-dept'?'<option value="">Semua Departemen</option>':'<option value="">— Pilih —</option>';
+        ds.forEach(d=>{sel.innerHTML+=`<option value="${d}">${d}</option>`});sel.value=v;
+    });
+}
+
+// ========== TASKS CRUD ==========
+function openTaskForm(tid=null){
+    $('m-task-title').textContent=tid?'Edit Task':'Tambah Task Baru';
+    $('t-id').value=tid||'';updDeptSel();
+    if(tid){
+        const t=D.g('tasks').find(x=>x.id===tid);
+        if(t){$('t-name').value=t.name;$('t-dead').value=t.deadline;$('t-status').value=t.status;$('t-prio').value=t.priority;$('t-dept').value=t.department||'';$('t-pic').value=t.pic||'';$('t-desc').value=t.description||''}
+    } else {$('t-name').value='';$('t-dead').value='';$('t-status').value='Backlog';$('t-prio').value='Normal';$('t-dept').value='';$('t-pic').value='';$('t-desc').value=''}
+    openM('m-task');
+}
+
+function saveTask(){
+    const id=$('t-id').value,name=$('t-name').value.trim(),dead=$('t-dead').value;
+    const status=$('t-status').value,prio=$('t-prio').value,dept=$('t-dept').value;
+    const pic=$('t-pic').value.trim(),desc=$('t-desc').value.trim();
+    if(!name){toast('Nama project wajib diisi','err');return}
+    if(!dead){toast('Deadline wajib diisi','err');return}
+    let ts=D.g('tasks');
+    if(id){const i=ts.findIndex(x=>x.id===id);if(i!==-1)ts[i]={...ts[i],name,deadline:dead,status,priority:prio,department:dept,pic,description:desc,updatedAt:new Date().toISOString()};toast('Task diupdate')}
+    else{ts.push({id:genId(),name,deadline:dead,status,priority:prio,department:dept,pic,description:desc,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});toast('Task ditambahkan')}
+    D.s('tasks',ts);closeM('m-task');renderTasks();renderDash();renderCal();updateBadges();
+}
+
+function cfDelTask(id){
+    const t=D.g('tasks').find(x=>x.id===id);
+    $('cf-title').textContent='Hapus Task';$('cf-msg').textContent=`Yakin hapus task "${t?.name||''}"?`;
+    const b=$('cf-btn');b.textContent='Hapus';b.className='btn btn-danger';
+    b.onclick=()=>{let ts=D.g('tasks');ts=ts.filter(x=>x.id!==id);D.s('tasks',ts);closeM('m-confirm');renderTasks();renderDash();renderCal();updateBadges();toast('Task dihapus')};
+    openM('m-confirm');
+}
+
+function renderTasks(){
+    let ts=D.g('tasks');
+    const q=($('f-search')?.value||'').toLowerCase(),fs=$('f-status')?.value||'',fp=$('f-prio')?.value||'',fd=$('f-dept')?.value||'';
+    let f=ts.filter(t=>{
+        if(q&&!t.name.toLowerCase().includes(q)&&!(t.pic||'').toLowerCase().includes(q)&&!(t.description||'').toLowerCase().includes(q))return false;
+        if(fs&&t.status!==fs)return false;if(fp&&t.priority!==fp)return false;if(fd&&t.department!==fd)return false;return true;
+    });
+    f.sort((a,b)=>{const p={Urgent:0,Normal:1,Low:2};if(p[a.priority]!==p[b.priority])return p[a.priority]-p[b.priority];return new Date(a.deadline)-new Date(b.deadline)});
+    const tb=$('task-tb'),tw=$('task-tbl-wrap'),em=$('task-empty');
+    if(!f.length){tw.style.display='none';em.style.display='';tb.innerHTML='';return}
+    tw.style.display='';em.style.display='none';
+    tb.innerHTML=f.map(t=>{
+        const od=isOD(t.deadline)&&t.status!=='Done'?' overdue':'';
+        return`<tr>
+            <td class="tbl-name" onclick="showTask('${t.id}')">${esc(t.name)}</td>
+            <td class="tbl-date${od}">${fmtDate(t.deadline)}${od?' ⚠':''}</td>
+            <td>${sBadge(t.status)}</td><td>${pBadge(t.priority)}</td>
+            <td style="font-size:13px">${esc(t.pic||'-')}</td><td style="font-size:13px">${esc(t.department||'-')}</td>
+            <td><div class="tbl-actions">
+                <button class="btn-icon" onclick="openTaskForm('${t.id}')" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                <button class="btn-icon" onclick="cfDelTask('${t.id}')" title="Hapus" style="color:var(--urgent-fg)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+            </div></td></tr>`}).join('');
+}
+
+function showTask(id){
+    const t=D.g('tasks').find(x=>x.id===id);if(!t)return;
+    const od=isOD(t.deadline)&&t.status!=='Done'?` <span class="badge badge-urgent">OVERDUE</span>`:'';
+    $('task-det-body').innerHTML=`
+        <div class="det-section"><div class="det-value"><h2>${esc(t.name)}</h2></div></div>
+        <div class="det-section"><div class="det-label">Deadline</div><div class="det-value">${fmtDate(t.deadline)}${od}</div></div>
+        <div class="det-inline"><div class="det-section"><div class="det-label">Status</div><div class="det-value">${sBadge(t.status)}</div></div>
+        <div class="det-section"><div class="det-label">Priority</div><div class="det-value">${pBadge(t.priority)}</div></div></div>
+        <div class="det-inline"><div class="det-section"><div class="det-label">PIC</div><div class="det-value">${esc(t.pic||'-')}</div></div>
+        <div class="det-section"><div class="det-label">Departemen</div><div class="det-value">${esc(t.department||'-')}</div></div></div>
+        ${t.description?`<div class="det-section"><div class="det-label">Deskripsi</div><div class="det-value">${esc(t.description)}</div></div>`:''}`;
+    openM('m-task-det');
+}
+
+// ========== NOTULENSI CRUD ==========
+function openNotForm(nid=null){
+    $('m-not-title').textContent=nid?'Edit Notulensi':'Buat Notulensi Baru';
+    $('n-id').value=nid||'';tmpP=[];tmpLk=[];
+    if(nid){
+        const n=D.g('notulensi').find(x=>x.id===nid);
+        if(n){$('n-judul').value=n.judul;$('n-tgl').value=n.tanggal;$('n-topik').value=n.topik||'';$('n-kesp').value=n.kesimpulan||'';tmpP=[...(n.peserta||[])];tmpLk=[...(n.langkah||[])]}
+    } else {$('n-judul').value='';$('n-tgl').value='';$('n-topik').value='';$('n-kesp').value=''}
+    renderPTags();renderLkList();openM('m-not');
+}
+
+function addP(){const inp=$('p-in'),v=inp.value.trim();if(!v)return;if(tmpP.includes(v)){toast('Peserta sudah ada','err');return}tmpP.push(v);inp.value='';renderPTags();inp.focus()}
+function rmP(i){tmpP.splice(i,1);renderPTags()}
+function renderPTags(){$('p-tags').innerHTML=tmpP.map((p,i)=>`<span class="tag">${esc(p)}<span class="tag-x" onclick="rmP(${i})">×</span></span>`).join('')}
+
+function addLk(){const inp=$('lk-in'),v=inp.value.trim();if(!v)return;tmpLk.push(v);inp.value='';renderLkList();inp.focus()}
+function rmLk(i){tmpLk.splice(i,1);renderLkList()}
+function renderLkList(){$('lk-list').innerHTML=tmpLk.map((l,i)=>`<div class="lk-item"><span class="lk-num">${i+1}.</span><span class="lk-text">${esc(l)}</span><span class="lk-rm" onclick="rmLk(${i})">×</span></div>`).join('')}
+
+function saveNot(){
+    const id=$('n-id').value,judul=$('n-judul').value.trim(),tgl=$('n-tgl').value;
+    const topik=$('n-topik').value.trim(),kesp=$('n-kesp').value.trim();
+    if(!judul){toast('Judul wajib diisi','err');return}
+    if(!tgl){toast('Tanggal wajib diisi','err');return}
+    let ns=D.g('notulensi');
+    const data={judul,tanggal:tgl,topik,kesimpulan:kesp,peserta:[...tmpP],langkah:[...tmpLk],updatedAt:new Date().toISOString()};
+    if(id){const i=ns.findIndex(x=>x.id===id);if(i!==-1)ns[i]={...ns[i],...data};toast('Notulensi diupdate')}
+    else{ns.push({id:genId(),...data,createdAt:new Date().toISOString()});toast('Notulensi ditambahkan')}
+    D.s('notulensi',ns);closeM('m-not');renderNots();renderDash();updateBadges();updSyncSel();
+}
+
+function cfDelNot(id){
+    const n=D.g('notulensi').find(x=>x.id===id);
+    $('cf-title').textContent='Hapus Notulensi';$('cf-msg').textContent=`Yakin hapus "${n?.judul||''}"?`;
+    const b=$('cf-btn');b.textContent='Hapus';b.className='btn btn-danger';
+    b.onclick=()=>{let ns=D.g('notulensi');ns=ns.filter(x=>x.id!==id);D.s('notulensi',ns);closeM('m-confirm');renderNots();renderDash();updateBadges();updSyncSel();toast('Notulensi dihapus')};
+    openM('m-confirm');
+}
+
+function renderNots(){
+    const ns=D.g('notulensi'),el=$('not-list'),em=$('not-empty');
+    if(!ns.length){el.innerHTML='';em.style.display='';return}
+    em.style.display='none';
+    const sorted=[...ns].sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));
+    el.innerHTML=sorted.map(n=>`
+        <div class="not-card" onclick="showNot('${n.id}')">
+            <div class="not-card-top">
+                <h4>${esc(n.judul)}</h4>
+                <span class="not-card-date">${fmtDate(n.tanggal)}</span>
+            </div>
+            <div class="not-card-meta">
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>${n.peserta?.length||0} peserta</span>
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>${n.langkah?.length||0} langkah</span>
+            </div>
+            <div class="not-card-actions" onclick="event.stopPropagation()">
+                <button class="btn btn-sm" onclick="openNotForm('${n.id}')">Edit</button>
+                <button class="btn btn-sm btn-ghost" style="color:var(--urgent-fg)" onclick="cfDelNot('${n.id}')">Hapus</button>
+            </div>
+        </div>`).join('');
+}
+
+function showNot(id){
+    const n=D.g('notulensi').find(x=>x.id===id);if(!n)return;
+    $('not-det-body').innerHTML=`
+        <div class="det-section"><div class="det-value"><h2>${esc(n.judul)}</h2></div><div style="margin-top:4px;font-size:13px;color:var(--text-tertiary)">${fmtDate(n.tanggal)}</div></div>
+        <div class="det-section"><div class="det-label">Peserta Meeting</div><div class="det-tags">${(n.peserta||[]).map(p=>`<span class="tag">${esc(p)}</span>`).join('')||'<span style="color:var(--text-tertiary);font-size:13px">-</span>'}</div></div>
+        <div class="det-section"><div class="det-label">Topik Bahasan</div><div class="det-value">${esc(n.topik||'-')}</div></div>
+        <div class="det-section"><div class="det-label">Langkah yang Ditempuh</div>${n.langkah?.length?`<ol class="det-ol">${n.langkah.map(l=>`<li>${esc(l)}</li>`).join('')}</ol>`:'<div class="det-value">-</div>'}</div>
+        <div class="det-section"><div class="det-label">Kesimpulan / Summary</div><div class="det-value">${esc(n.kesimpulan||'-')}</div></div>`;
+    $('btn-word').onclick=()=>expWord(id);
+    $('btn-pdf').onclick=()=>expPdf(id);
+    openM('m-not-det');
+}
+
+// ========== DASHBOARD ==========
+function renderDash(){
+    const ts=D.g('tasks'),ns=D.g('notulensi');
+    $('s-total').textContent=ts.length;
+    $('s-prog').textContent=ts.filter(t=>t.status==='In Progress').length;
+    $('s-done').textContent=ts.filter(t=>t.status==='Done').length;
+    $('s-over').textContent=ts.filter(t=>isOD(t.deadline)&&t.status!=='Done').length;
+
+    // Upcoming
+    const up=ts.filter(t=>t.status!=='Done').sort((a,b)=>new Date(a.deadline)-new Date(b.deadline)).slice(0,5);
+    $('upcoming').innerHTML=up.length?up.map(t=>{
+        const od=isOD(t.deadline)?' overdue':'';
+        return`<div class="side-list-item${od}" onclick="showTask('${t.id}')"><span class="side-list-date">${fmtShort(t.deadline)}</span><span class="side-list-name">${esc(t.name)}</span>${pBadge(t.priority)}</div>`
+    }).join(''):'<div class="empty-sm">Belum ada task</div>';
+
+    // Recent notulensi
+    const rn=[...ns].sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal)).slice(0,3);
+    $('recent-not').innerHTML=rn.length?rn.map(n=>`<div class="side-list-item" onclick="showNot('${n.id}')"><span class="side-list-date">${fmtShort(n.tanggal)}</span><span class="side-list-name">${esc(n.judul)}</span></div>`).join(''):'<div class="empty-sm">Belum ada notulensi</div>';
+}
+
+// ========== CALENDAR ==========
+function renderCal(){
+    const grid=$('cal-grid');
+    const wds=grid.querySelectorAll('.cal-weekday');
+    grid.innerHTML='';wds.forEach(w=>grid.appendChild(w));
+    const mn=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    $('cal-label').textContent=mn[cMonth]+' '+cYear;
+    const first=new Date(cYear,cMonth,1),last=new Date(cYear,cMonth+1,0);
+    const startDow=(first.getDay()+6)%7;
+    const tasks=D.g('tasks'),today=new Date();
+    const prevLast=new Date(cYear,cMonth,0);
+    for(let i=startDow-1;i>=0;i--){const d=prevLast.getDate()-i;mkDay(grid,d,true,[],'')}
+    for(let d=1;d<=last.getDate();d++){
+        const ds=`${cYear}-${String(cMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const dt=tasks.filter(t=>t.deadline===ds);
+        const isT=today.getFullYear()===cYear&&today.getMonth()===cMonth&&today.getDate()===d;
+        mkDay(grid,d,false,dt,ds,isT);
+    }
+    const total=grid.children.length;const rem=(7-((total-7)%7))%7;
+    for(let i=1;i<=rem;i++)mkDay(grid,i,true,[],'')}
+
+function mkDay(grid,d,oth,tasks=[],ds='',isT=false){
+    const el=document.createElement('div');el.className='cal-day';
+    if(oth)el.classList.add('other');if(isT)el.classList.add('today');
+    let dots='';
+    if(tasks.length){dots='<div class="cal-dots">'+tasks.slice(0,3).map(t=>`<div class="cal-dot" style="background:${dotColor(t.status)}"></div>`).join('')+'</div>'}
+    el.innerHTML=`<div class="cal-day-num">${d}</div>${dots}`;
+    if(tasks.length&&ds)el.onclick=(e)=>{e.stopPropagation();showCalPop(e,ds,tasks)};
+    grid.appendChild(el);
+}
+
+function chMonth(d){cMonth+=d;if(cMonth>11){cMonth=0;cYear++}if(cMonth<0){cMonth=11;cYear--}renderCal();removeCalPopup()}
+
+function showCalPop(e,ds,tasks){
+    removeCalPopup();
+    const pop=document.createElement('div');pop.className='cal-popup';pop.id='cal-pop';
+    pop.innerHTML=`<div class="cal-popup-title"><span>${fmtDate(ds)}</span><button class="btn-icon" onclick="removeCalPopup()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>`
+        +tasks.map(t=>`<div class="cal-popup-item" onclick="showTask('${t.id}');removeCalPopup()">${sBadge(t.status)} <span>${esc(t.name)}</span></div>`).join('');
+    const rect=e.currentTarget.getBoundingClientRect();
+    pop.style.top=Math.min(rect.bottom+4,window.innerHeight-200)+'px';
+    pop.style.left=Math.min(rect.left,window.innerWidth-280)+'px';
+    document.body.appendChild(pop);calPopup=pop;
+    document.addEventListener('click',calPopOutsideClick);
+}
+
+function removeCalPopup(){if(calPopup){calPopup.remove();calPopup=null;document.removeEventListener('click',calPopOutsideClick)}}
+function calPopOutsideClick(e){if(calPopup&&!calPopup.contains(e.target)&&!e.target.closest('.cal-day'))removeCalPopup()}
+
+// ========== SYNC ==========
+function updSyncSel(){
+    const sel=$('sync-sel'),ns=D.g('notulensi');
+    sel.innerHTML='<option value="">— Pilih Notulensi —</option>';
+    ns.forEach(n=>{sel.innerHTML+=`<option value="${n.id}">${esc(n.judul)} (${fmtDate(n.tanggal)})</option>`});
+}
+
+function loadSync(){
+    const id=$('sync-sel').value,box=$('sync-box'),btn=$('sync-btn');
+    if(!id){box.innerHTML='';btn.style.display='none';return}
+    const n=D.g('notulensi').find(x=>x.id===id);
+    if(!n||!n.langkah?.length){box.innerHTML='<div class="empty-sm">Tidak ada langkah untuk di-sync</div>';btn.style.display='none';return}
+    const ds=D.g('departments');
+    const dopts=ds.map(d=>`<option value="${d}">${d}</option>`).join('');
+    box.innerHTML=n.langkah.map((l,i)=>`<div class="sync-item" id="si-${i}">
+        <input type="checkbox" id="sc-${i}" onchange="toggleSync(${i})">
+        <div class="sync-content"><div class="sync-text">${esc(l)}</div>
+        <div class="sync-fields" id="sf-${i}" style="display:none">
+            <input type="text" class="form-input" placeholder="PIC" id="sp-${i}">
+            <select class="form-input" id="sd-${i}"><option value="">Departemen</option>${dopts}</select>
+            <input type="date" class="form-input" id="sl-${i}">
+            <select class="form-input" id="sr-${i}"><option value="Normal">Normal</option><option value="Urgent">Urgent</option><option value="Low">Low</option></select>
+        </div></div></div>`).join('');
+    btn.style.display='';
+}
+
+function toggleSync(i){const c=$('sc-'+i).checked;$('sf-'+i).style.display=c?'grid':'none';$('si-'+i).classList.toggle('checked',c)}
+
+function doSync(){
+    const id=$('sync-sel').value;if(!id)return;
+    const n=D.g('notulensi').find(x=>x.id===id);if(!n)return;
+    let ts=D.g('tasks'),cnt=0;
+    n.langkah.forEach((l,i)=>{
+        if(!$('sc-'+i)?.checked)return;
+        const dl=$('sl-'+i)?.value;if(!dl){toast(`Langkah ${i+1}: Deadline wajib diisi`,'err');return}
+        ts.push({id:genId(),name:l,deadline:dl,status:'To Do',priority:$('sr-'+i)?.value||'Normal',department:$('sd-'+i)?.value||'',pic:$('sp-'+i)?.value?.trim()||'',description:`Dari notulensi: ${n.judul}`,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});
+        cnt++;
+    });
+    if(cnt){D.s('tasks',ts);renderTasks();renderDash();renderCal();updateBadges();toast(`${cnt} task dibuat dari notulensi`);$('sync-sel').value='';$('sync-box').innerHTML='';$('sync-btn').style.display='none'}
+}
+
+// ========== EXPORT WORD ==========
+function expWord(id){
+    const n=D.g('notulensi').find(x=>x.id===id);if(!n)return;
+    if(typeof docx==='undefined'){toast('Library docx.js belum dimuat','err');return}
+    const{Document,Packer,Paragraph,TextRun,HeadingLevel,AlignmentType,BorderStyle}=docx;
+    const ch=[];
+    ch.push(new Paragraph({children:[new TextRun({text:'NOTULENSI MEETING',bold:true,size:32,font:'Calibri'})],alignment:AlignmentType.CENTER,spacing:{after:100}}));
+    ch.push(new Paragraph({children:[new TextRun({text:'Forum Bogor Kota Gastronomi',size:24,font:'Calibri',color:'666666'})],alignment:AlignmentType.CENTER,spacing:{after:300}}));
+    ch.push(new Paragraph({border:{bottom:{color:'CCCCCC',space:1,style:BorderStyle.SINGLE,size:6}},spacing:{after:200}}));
+    ch.push(new Paragraph({children:[new TextRun({text:'Judul: ',bold:true,size:24,font:'Calibri'}),new TextRun({text:n.judul,size:24,font:'Calibri'})],spacing:{after:100}}));
+    ch.push(new Paragraph({children:[new TextRun({text:'Tanggal: ',bold:true,size:24,font:'Calibri'}),new TextRun({text:fmtDate(n.tanggal),size:24,font:'Calibri'})],spacing:{after:200}}));
+    ch.push(new Paragraph({children:[new TextRun({text:'Peserta Meeting',bold:true,size:24,font:'Calibri'})],heading:HeadingLevel.HEADING_2,spacing:{before:200,after:100}}));
+    (n.peserta||[]).forEach(p=>{ch.push(new Paragraph({children:[new TextRun({text:'• '+p,size:22,font:'Calibri'})],spacing:{after:40}}))});
+    ch.push(new Paragraph({children:[new TextRun({text:'Topik Bahasan',bold:true,size:24,font:'Calibri'})],heading:HeadingLevel.HEADING_2,spacing:{before:200,after:100}}));
+    ch.push(new Paragraph({children:[new TextRun({text:n.topik||'-',size:22,font:'Calibri'})],spacing:{after:200}}));
+    ch.push(new Paragraph({children:[new TextRun({text:'Langkah yang Ditempuh',bold:true,size:24,font:'Calibri'})],heading:HeadingLevel.HEADING_2,spacing:{before:200,after:100}}));
+    (n.langkah||[]).forEach((l,i)=>{ch.push(new Paragraph({children:[new TextRun({text:(i+1)+'. '+l,size:22,font:'Calibri'})],spacing:{after:60}}))});
+    ch.push(new Paragraph({children:[new TextRun({text:'Kesimpulan / Summary',bold:true,size:24,font:'Calibri'})],heading:HeadingLevel.HEADING_2,spacing:{before:200,after:100}}));
+    ch.push(new Paragraph({children:[new TextRun({text:n.kesimpulan||'-',size:22,font:'Calibri'})],spacing:{after:200}}));
+    const doc=new Document({sections:[{children:ch}]});
+    Packer.toBlob(doc).then(blob=>{const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=`Notulensi_${n.judul.replace(/[^a-zA-Z0-9]/g,'_')}.docx`;a.click();URL.revokeObjectURL(u);toast('Word berhasil didownload')});
+}
+
+// ========== EXPORT PDF ==========
+function expPdf(id){
+    const n=D.g('notulensi').find(x=>x.id===id);if(!n)return;
+    if(!window.jspdf){toast('Library jsPDF belum dimuat','err');return}
+    const{jsPDF}=window.jspdf;const doc=new jsPDF();let y=20;const lm=20,pw=170;
+    doc.setFont('helvetica','bold');doc.setFontSize(18);doc.text('NOTULENSI MEETING',105,y,{align:'center'});y+=8;
+    doc.setFontSize(11);doc.setFont('helvetica','normal');doc.setTextColor(100);doc.text('Forum Bogor Kota Gastronomi',105,y,{align:'center'});y+=10;doc.setTextColor(0);
+    doc.setDrawColor(200);doc.line(lm,y,lm+pw,y);y+=10;
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('Judul:',lm,y);doc.setFont('helvetica','normal');doc.text(n.judul,lm+30,y);y+=7;
+    doc.setFont('helvetica','bold');doc.text('Tanggal:',lm,y);doc.setFont('helvetica','normal');doc.text(fmtDate(n.tanggal),lm+30,y);y+=12;
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('Peserta Meeting',lm,y);y+=7;doc.setFontSize(10);doc.setFont('helvetica','normal');
+    (n.peserta||[]).forEach(p=>{if(y>270){doc.addPage();y=20}doc.text('•  '+p,lm+4,y);y+=6});y+=6;
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('Topik Bahasan',lm,y);y+=7;doc.setFontSize(10);doc.setFont('helvetica','normal');
+    doc.splitTextToSize(n.topik||'-',pw).forEach(l=>{if(y>270){doc.addPage();y=20}doc.text(l,lm,y);y+=5.5});y+=6;
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('Langkah yang Ditempuh',lm,y);y+=7;doc.setFontSize(10);doc.setFont('helvetica','normal');
+    (n.langkah||[]).forEach((l,i)=>{doc.splitTextToSize((i+1)+'. '+l,pw-4).forEach(line=>{if(y>270){doc.addPage();y=20}doc.text(line,lm+4,y);y+=5.5});y+=2});y+=6;
+    if(y>250){doc.addPage();y=20}doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('Kesimpulan / Summary',lm,y);y+=7;doc.setFontSize(10);doc.setFont('helvetica','normal');
+    doc.splitTextToSize(n.kesimpulan||'-',pw).forEach(l=>{if(y>270){doc.addPage();y=20}doc.text(l,lm,y);y+=5.5});
+    doc.save(`Notulensi_${n.judul.replace(/[^a-zA-Z0-9]/g,'_')}.pdf`);toast('PDF berhasil didownload');
+}
+
+// ========== BACKUP ==========
+function exportAll(){
+    const d=D.all();const blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+    const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=`ForumBogor_Backup_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(u);toast('Data di-export');
+}
+
+function importAll(e){
+    const f=e.target.files[0];if(!f)return;
+    const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(d.tasks)D.s('tasks',d.tasks);if(d.notulensi)D.s('notulensi',d.notulensi);if(d.departments)D.s('departments',d.departments);init();toast('Data di-import')}catch{toast('File JSON tidak valid','err')}};
+    r.readAsText(f);e.target.value='';
+}
+
+function confirmReset(){
+    $('cf-title').textContent='Reset Semua Data';
+    $('cf-msg').textContent='PERINGATAN: Semua data akan dihapus permanen. Lanjutkan?';
+    const b=$('cf-btn');b.textContent='Reset Semua';b.className='btn btn-danger';
+    b.onclick=()=>{D.s('tasks',[]);D.s('notulensi',[]);D.s('departments',[]);closeM('m-confirm');init();toast('Data direset','info')};
+    openM('m-confirm');
+}
+</script>
+</body>
+</html>
