@@ -346,6 +346,21 @@ function rdb(ds){if(!Array.isArray(ds))ds=[ds];return ds.map(d=>`<span class="de
 function tmd(t,f){if(!f)return true;return gd(t).includes(f)}
 function ld(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch{return d}}
 function sd(k,d){localStorage.setItem(k,JSON.stringify(d))}
+// MIGRATION: read old keys (fbkg_*) into new keys (pd_*) if new keys are empty
+(function migrate(){
+  const oldNots=ld('fbkg_notulensi',[]);
+  const oldTasks=ld('fbkg_tasks',[]);
+  const newNots=ld('pd_notulensi',[]);
+  const newTasks=ld('pd_tasks',[]);
+  if(newNots.length===0&&oldNots.length>0){
+    sd('pd_notulensi',oldNots);
+    console.log('Migrated '+oldNots.length+' notulensi from fbkg_notulensi → pd_notulensi');
+  }
+  if(newTasks.length===0&&oldTasks.length>0){
+    sd('pd_tasks',oldTasks);
+    console.log('Migrated '+oldTasks.length+' tasks from fbkg_tasks → pd_tasks');
+  }
+})();
 let tasks=ld('pd_tasks',[]),nots=ld('pd_notulensi',[]),curMonth=new Date().getMonth(),curYear=new Date().getFullYear(),curDetailId=null,tds=[];
 const gid=()=>Date.now().toString(36)+Math.random().toString(36).substr(2,5);
 const esc=s=>s?(s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):'';
@@ -539,4 +554,3 @@ popDeptDD();refreshAll();
 </script>
 </body>
 </html>
-full page notulensi editor + structured topics
