@@ -365,25 +365,38 @@ function getTopics(n){
   if(n.topics&&Array.isArray(n.topics))return n.topics;
   // Old format: topik=string, langkah=string → convert
   const topics=[];
-  if(n.topik){
-    const topikLines=n.topik.split('\n').filter(x=>x.trim());
-    const langkahLines=n.langkah?n.langkah.split('\n').filter(x=>x.trim()):[];
+  if(n.topik||n.langkah){
+    // Handle topik: could be string or array
+    var topikLines=[];
+    if(Array.isArray(n.topik)){topikLines=n.topik.map(function(x){return typeof x==='string'?x.trim():String(x)})}
+    else if(typeof n.topik==='string'){topikLines=n.topik.split('\n').filter(function(x){return x.trim()})}
+    // Handle langkah: could be string or array
+    var langkahLines=[];
+    if(Array.isArray(n.langkah)){langkahLines=n.langkah.map(function(x){return typeof x==='string'?x.trim():String(x)})}
+    else if(typeof n.langkah==='string'){langkahLines=n.langkah.split('\n').filter(function(x){return x.trim()})}
     if(topikLines.length>0){
-      topikLines.forEach(t=>{topics.push({topik:t.trim(),langkah:[]})});
-      // Put all langkah under first topic if old format
-      if(topics.length>0&&langkahLines.length>0)topics[0].langkah=langkahLines.map(l=>l.trim());
+      topikLines.forEach(function(t){topics.push({topik:t,langkah:[]})});
+      if(topics.length>0&&langkahLines.length>0)topics[0].langkah=langkahLines;
     }else if(langkahLines.length>0){
-      topics.push({topik:'Pembahasan Umum',langkah:langkahLines.map(l=>l.trim())});
+      topics.push({topik:'Pembahasan Umum',langkah:langkahLines});
     }
   }
   return topics;
 }
 function getAllLangkah(n){
-  const topics=getTopics(n);
-  const result=[];
-  topics.forEach(t=>{t.langkah.forEach(l=>{result.push({topik:t.topik,langkah:l})})});
+  var topics=getTopics(n);
+  var result=[];
+  topics.forEach(function(t){t.langkah.forEach(function(l){result.push({topik:t.topik,langkah:l})})});
   return result;
 }
+// Safe peserta: handle both string and array
+function getPesertaArr(n){
+  if(!n.peserta)return[];
+  if(Array.isArray(n.peserta))return n.peserta.map(function(p){return typeof p==='string'?p.trim():String(p)}).filter(function(p){return p});
+  if(typeof n.peserta==='string')return n.peserta.split(',').map(function(p){return p.trim()}).filter(function(p){return p});
+  return[];
+}
+function getPesertaStr(n){return getPesertaArr(n).join(', ')}
 
 // THEME
 function toggleTheme(){const d=document.documentElement.getAttribute('data-theme')==='dark';document.documentElement.setAttribute('data-theme',d?'':'dark');localStorage.setItem('pd_theme',d?'light':'dark');updateThemeUI()}
@@ -432,11 +445,11 @@ function renderKanban(){const df=document.getElementById('kanbanDeptFilter').val
 function renderTaskList(){const df=document.getElementById('taskDeptFilter').value,sf=document.getElementById('taskStatusFilter').value,se=document.getElementById('taskSearch').value.toLowerCase();let f=tasks;if(df)f=f.filter(t=>tmd(t,df));if(sf)f=f.filter(t=>t.status===sf);if(se)f=f.filter(t=>t.name.toLowerCase().includes(se)||(t.pic||'').toLowerCase().includes(se)||(t.description||'').toLowerCase().includes(se));f.sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));const today=new Date();today.setHours(0,0,0,0);const tb=document.getElementById('taskTableBody');tb.innerHTML=f.map(t=>{const o=t.status!=='done'&&new Date(t.deadline)<today;return`<tr><td style="font-weight:600">${esc(t.name)}</td><td style="color:var(--text-secondary);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(t.description)}">${esc(t.description||'-')}</td><td>${esc(t.pic||'-')}</td><td>${rdb(gd(t))}</td><td style="font-family:'JetBrains Mono',monospace;font-size:12px;${o?'color:#ef4444;font-weight:700;':''}">${t.deadline}</td><td><span class="status-badge ${t.status}">${sn(t.status)}</span></td><td><div class="action-btns"><button class="action-btn" onclick="openTaskModal('${t.id}')" title="Edit"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="action-btn delete" onclick="confirmDelTask('${t.id}')" title="Hapus"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></div></td></tr>`}).join('');if(f.length===0)tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-secondary)">Belum ada task.</td></tr>'}
 
 // ===== NOTULENSI =====
-function renderNotulensi(){const se=document.getElementById('notulensiSearch').value.toLowerCase();let f=nots;if(se)f=f.filter(n=>n.judul.toLowerCase().includes(se)||(n.kesimpulan||'').toLowerCase().includes(se));f.sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));const list=document.getElementById('notulensiList');list.innerHTML=f.map(n=>{const topics=getTopics(n);const topicCount=topics.length;return`<div class="card notulensi-card" onclick="viewNot('${n.id}')"><h4>${esc(n.judul)}</h4><div class="meta"><span>📅 ${n.tanggal}</span><span>👥 ${n.peserta?n.peserta.split(',').length:0} peserta</span><span>📋 ${topicCount} topik</span></div><div class="kesimpulan">${esc(n.kesimpulan)}</div><div class="card-actions"><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openNotEditor('${n.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDelNot('${n.id}')">Hapus</button></div></div>`}).join('');if(f.length===0)list.innerHTML='<div class="card" style="padding:40px;text-align:center;color:var(--text-secondary)">Belum ada notulensi.</div>'}
+function renderNotulensi(){var se=document.getElementById('notulensiSearch').value.toLowerCase();var f=nots;if(se)f=f.filter(function(n){return n.judul.toLowerCase().includes(se)||(n.kesimpulan||'').toLowerCase().includes(se)});f.sort(function(a,b){return new Date(b.tanggal)-new Date(a.tanggal)});var list=document.getElementById('notulensiList');list.innerHTML=f.map(function(n){var topics=getTopics(n);var pc=getPesertaArr(n).length;return'<div class="card notulensi-card" onclick="viewNot(\''+n.id+'\')"><h4>'+esc(n.judul)+'</h4><div class="meta"><span>📅 '+n.tanggal+'</span><span>👥 '+pc+' peserta</span><span>📋 '+topics.length+' topik</span></div><div class="kesimpulan">'+esc(n.kesimpulan)+'</div><div class="card-actions"><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openNotEditor(\''+n.id+'\')">Edit</button><button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDelNot(\''+n.id+'\')">Hapus</button></div></div>'}).join('');if(f.length===0)list.innerHTML='<div class="card" style="padding:40px;text-align:center;color:var(--text-secondary)">Belum ada notulensi.</div>'}
 function confirmDelNot(nid){const n=nots.find(x=>x.id===nid);if(!n)return;document.getElementById('confirmMessage').textContent=`Apakah kamu yakin ingin menghapus notulensi "${n.judul}"?`;document.getElementById('confirmBtn').onclick=()=>{nots=nots.filter(x=>x.id!==nid);sd('pd_notulensi',nots);closeModal('confirmModal');refreshAll()};openModal('confirmModal')}
 
 // VIEW DETAIL
-function viewNot(nid){const n=nots.find(x=>x.id===nid);if(!n)return;curDetailId=nid;document.getElementById('detailNotTitle').textContent=n.judul;const topics=getTopics(n);const pl=n.peserta?n.peserta.split(',').map(p=>`<li>${esc(p.trim())}</li>`).join(''):'<li>-</li>';
+function viewNot(nid){var n=nots.find(function(x){return x.id===nid});if(!n)return;curDetailId=nid;document.getElementById('detailNotTitle').textContent=n.judul;var topics=getTopics(n);var parr=getPesertaArr(n);var pl=parr.length>0?parr.map(function(p){return'<li>'+esc(p)+'</li>'}).join(''):'<li>-</li>';
 let topicsHtml='';topics.forEach((t,i)=>{topicsHtml+=`<div class="detail-topic"><h5>Topik ${i+1}: ${esc(t.topik)}</h5><ul>${t.langkah.map(l=>`<li>${esc(l)}</li>`).join('')||'<li style="color:var(--text-secondary)">Belum ada langkah</li>'}</ul></div>`});
 document.getElementById('detailNotBody').innerHTML=`<div class="detail-section"><h4>Tanggal</h4><p>${n.tanggal}</p></div><div class="detail-section"><h4>Peserta Meeting</h4><ul>${pl}</ul></div><div class="detail-section"><h4>Topik & Langkah</h4>${topicsHtml||'<p style="color:var(--text-secondary)">Belum ada topik.</p>'}</div><div class="detail-section"><h4>Kesimpulan</h4><p>${esc(n.kesimpulan)}</p></div>`;
 openModal('detailModal')}
@@ -451,7 +464,7 @@ function openNotEditor(nid){
     document.getElementById('editorNotId').value=n.id;
     document.getElementById('edJudul').value=n.judul;
     document.getElementById('edTanggal').value=n.tanggal;
-    document.getElementById('edPeserta').value=n.peserta||'';
+    document.getElementById('edPeserta').value=getPesertaStr(n);
     document.getElementById('edKesimpulan').value=n.kesimpulan||'';
     editorTopics=JSON.parse(JSON.stringify(getTopics(n)));
   }else{
@@ -516,7 +529,7 @@ function popExportDD(){const ns2=document.getElementById('exportNotulensiSelect'
 function getSelNot(){return nots.find(n=>n.id===document.getElementById('exportNotulensiSelect').value)}
 
 function buildNotHTML(n,forWord){
-  const topics=getTopics(n);const peserta=n.peserta?n.peserta.split(',').map(x=>x.trim()).filter(x=>x):[];
+  var topics=getTopics(n);var peserta=getPesertaArr(n);
   let topicsHTML='';topics.forEach(t=>{topicsHTML+=`<h2>${esc(t.topik)}</h2><ul>${t.langkah.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>`});
   const style=forWord?'body{font-family:Calibri,sans-serif;font-size:12pt;color:#333;margin:40px}h1{font-size:20pt;color:#1a1d2e;border-bottom:3px solid #6366f1;padding-bottom:8px}h2{font-size:14pt;color:#6366f1;margin-top:20px}h3{font-size:12pt;color:#444;margin-top:14px}ul{margin:8px 0;padding-left:24px}li{margin-bottom:4px}.meta{color:#666;font-size:11pt;margin-bottom:16px}'
     :'*{margin:0;padding:0;box-sizing:border-box}body{font-family:"Segoe UI",Calibri,sans-serif;padding:48px;color:#1a1d2e;line-height:1.6}h1{font-size:22px;border-bottom:3px solid #6366f1;padding-bottom:8px;margin-bottom:8px}.meta{color:#666;font-size:13px;margin-bottom:24px}h2{font-size:15px;color:#6366f1;margin:20px 0 8px;text-transform:uppercase;letter-spacing:.5px}ul{padding-left:24px;margin-bottom:12px}li{margin-bottom:4px;font-size:14px}p{font-size:14px;margin-bottom:12px}@media print{body{padding:24px}}';
