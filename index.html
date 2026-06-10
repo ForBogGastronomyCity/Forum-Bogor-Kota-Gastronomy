@@ -364,7 +364,7 @@ var esc=function(s){return s?(s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').r
 function getTopics(n){
   if(n.topics&&Array.isArray(n.topics))return n.topics;
   // Old format: topik=string, langkah=string → convert
-  const topics=[];
+  var topics=[];
   if(n.topik||n.langkah){
     // Handle topik: could be string or array
     var topikLines=[];
